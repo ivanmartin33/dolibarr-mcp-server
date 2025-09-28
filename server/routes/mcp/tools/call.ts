@@ -1,17 +1,5 @@
 import { eventHandler, readBody } from "h3"
-import { ofetch } from "ofetch"
-
-/**
- * Dolibarr API base URL from environment variable
- * @default "http://dolibarr.localhost/api/index.php"
- */
-const DOLI_URL = process.env.DOLI_URL || "http://dolibarr.localhost/api/index.php"
-
-/**
- * Dolibarr API key from environment variable
- * @default "super_api_key"
- */
-const DOLI_KEY = process.env.DOLI_KEY || "super_api_key"
+import { useRuntimeConfig } from "nitropack/runtime"
 
 /**
  * MCP tool call request interface
@@ -34,17 +22,19 @@ interface MCPToolCallRequest {
 
 /**
  * Direct tool call endpoint for MCP tools
- * 
+ *
  * This endpoint provides a direct way to call Dolibarr tools without going through
  * the main MCP endpoint. Useful for testing and direct integrations.
- * 
+ *
  * @param event - H3 event object containing the request
  * @returns JSON-RPC 2.0 response with tool execution result
  */
 export default eventHandler(async (event) => {
+  const config = useRuntimeConfig()
+
   try {
     const body: MCPToolCallRequest = await readBody(event)
-    
+
     if (!body.jsonrpc || body.jsonrpc !== "2.0") {
       return {
         jsonrpc: "2.0",
@@ -71,13 +61,13 @@ export default eventHandler(async (event) => {
 
     switch (name) {
       case "dolibarr_get":
-        return await handleDolibarrGet(args, body.id)
+        return await handleDolibarrGet(args, body.id, config)
       case "dolibarr_post":
-        return await handleDolibarrPost(args, body.id)
+        return await handleDolibarrPost(args, body.id, config)
       case "dolibarr_put":
-        return await handleDolibarrPut(args, body.id)
+        return await handleDolibarrPut(args, body.id, config)
       case "dolibarr_delete":
-        return await handleDolibarrDelete(args, body.id)
+        return await handleDolibarrDelete(args, body.id, config)
       default:
         return {
           jsonrpc: "2.0",
@@ -89,6 +79,7 @@ export default eventHandler(async (event) => {
         }
     }
   } catch (error: any) {
+    console.error("MCP Tool Call Error:", error)
     return {
       jsonrpc: "2.0",
       error: {
@@ -101,10 +92,10 @@ export default eventHandler(async (event) => {
   }
 })
 
-async function handleDolibarrGet(args: any, requestId: string | number) {
+async function handleDolibarrGet(args: any, requestId: string | number, config: any) {
   try {
     const { endpoint, id, params } = args
-    
+
     if (!endpoint) {
       return {
         jsonrpc: "2.0",
@@ -116,7 +107,7 @@ async function handleDolibarrGet(args: any, requestId: string | number) {
       }
     }
 
-    let url = `${DOLI_URL}/${endpoint}`
+    let url = `${config.doliUrl}/${endpoint}`
     if (id) {
       url += `/${id}`
     }
@@ -126,10 +117,12 @@ async function handleDolibarrGet(args: any, requestId: string | number) {
       url += `?${queryParams.toString()}`
     }
 
-    const data = await ofetch(url, {
+    console.log(`[MCP GET] Calling Dolibarr API: ${url}`)
+
+    const data = await $fetch(url, {
       method: "GET",
       headers: {
-        "DOLAPIKEY": DOLI_KEY,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json"
       }
     })
@@ -147,6 +140,7 @@ async function handleDolibarrGet(args: any, requestId: string | number) {
       id: requestId
     }
   } catch (error: any) {
+    console.error(`[MCP GET] Dolibarr API error:`, error)
     return {
       jsonrpc: "2.0",
       error: {
@@ -159,10 +153,10 @@ async function handleDolibarrGet(args: any, requestId: string | number) {
   }
 }
 
-async function handleDolibarrPost(args: any, requestId: string | number) {
+async function handleDolibarrPost(args: any, requestId: string | number, config: any) {
   try {
     const { endpoint, data } = args
-    
+
     if (!endpoint || !data) {
       return {
         jsonrpc: "2.0",
@@ -174,12 +168,14 @@ async function handleDolibarrPost(args: any, requestId: string | number) {
       }
     }
 
-    const url = `${DOLI_URL}/${endpoint}`
+    const url = `${config.doliUrl}/${endpoint}`
 
-    const result = await ofetch(url, {
+    console.log(`[MCP POST] Calling Dolibarr API: ${url}`)
+
+    const result = await $fetch(url, {
       method: "POST",
       headers: {
-        "DOLAPIKEY": DOLI_KEY,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json"
       },
       body: data
@@ -198,6 +194,7 @@ async function handleDolibarrPost(args: any, requestId: string | number) {
       id: requestId
     }
   } catch (error: any) {
+    console.error(`[MCP POST] Dolibarr API error:`, error)
     return {
       jsonrpc: "2.0",
       error: {
@@ -210,10 +207,10 @@ async function handleDolibarrPost(args: any, requestId: string | number) {
   }
 }
 
-async function handleDolibarrPut(args: any, requestId: string | number) {
+async function handleDolibarrPut(args: any, requestId: string | number, config: any) {
   try {
     const { endpoint, id, data } = args
-    
+
     if (!endpoint || !id || !data) {
       return {
         jsonrpc: "2.0",
@@ -225,12 +222,14 @@ async function handleDolibarrPut(args: any, requestId: string | number) {
       }
     }
 
-    const url = `${DOLI_URL}/${endpoint}/${id}`
+    const url = `${config.doliUrl}/${endpoint}/${id}`
 
-    const result = await ofetch(url, {
+    console.log(`[MCP PUT] Calling Dolibarr API: ${url}`)
+
+    const result = await $fetch(url, {
       method: "PUT",
       headers: {
-        "DOLAPIKEY": DOLI_KEY,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json"
       },
       body: data
@@ -249,6 +248,7 @@ async function handleDolibarrPut(args: any, requestId: string | number) {
       id: requestId
     }
   } catch (error: any) {
+    console.error(`[MCP PUT] Dolibarr API error:`, error)
     return {
       jsonrpc: "2.0",
       error: {
@@ -261,10 +261,10 @@ async function handleDolibarrPut(args: any, requestId: string | number) {
   }
 }
 
-async function handleDolibarrDelete(args: any, requestId: string | number) {
+async function handleDolibarrDelete(args: any, requestId: string | number, config: any) {
   try {
     const { endpoint, id } = args
-    
+
     if (!endpoint || !id) {
       return {
         jsonrpc: "2.0",
@@ -276,12 +276,14 @@ async function handleDolibarrDelete(args: any, requestId: string | number) {
       }
     }
 
-    const url = `${DOLI_URL}/${endpoint}/${id}`
+    const url = `${config.doliUrl}/${endpoint}/${id}`
 
-    const result = await ofetch(url, {
+    console.log(`[MCP DELETE] Calling Dolibarr API: ${url}`)
+
+    const result = await $fetch(url, {
       method: "DELETE",
       headers: {
-        "DOLAPIKEY": DOLI_KEY,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json"
       }
     })
@@ -299,6 +301,7 @@ async function handleDolibarrDelete(args: any, requestId: string | number) {
       id: requestId
     }
   } catch (error: any) {
+    console.error(`[MCP DELETE] Dolibarr API error:`, error)
     return {
       jsonrpc: "2.0",
       error: {

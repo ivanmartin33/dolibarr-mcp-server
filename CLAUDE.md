@@ -81,13 +81,9 @@ The server exposes four main tools:
 - `server/routes/index.ts` - Landing page handler
 - `server/routes/mcp/index.ts` - Main MCP JSON-RPC endpoint with full tool implementations
 - `server/routes/mcp/describe.ts` - Server description (HTTP GET) with duplicate tool implementations
-- `server/routes/mcp/tools/call.ts` - Direct tool execution endpoint with hardcoded environment variables
-- `server/routes/mcp/proxy/[...path].ts` - Legacy HTTP proxy (deprecated)
+- `server/routes/mcp/tools/call.ts` - Direct tool execution endpoint
 
-**Important**: The codebase has some inconsistencies:
-- `server/routes/mcp/index.ts` uses `useRuntimeConfig()` for environment variables
-- `server/routes/mcp/tools/call.ts` uses hardcoded `process.env` variables
-- Both files implement similar tool logic but with different configuration approaches
+**Configuration**: All MCP routes now use unified `useRuntimeConfig()` for consistent environment variable handling with proper logging and error handling.
 
 ## Dependencies and Package Management
 
