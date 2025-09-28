@@ -298,8 +298,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DOLI_URL=http://host.docker.internal:4000/api/index.php
-      - DOLI_KEY=your-api-key
+      - NITRO_DOLI_URL=http://host.docker.internal:4000/api/index.php
+      - NITRO_DOLI_KEY=your-api-key
       - NITRO_HOST=0.0.0.0
       - NITRO_PORT=3000
     restart: unless-stopped
