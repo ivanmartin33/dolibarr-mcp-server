@@ -1,13 +1,15 @@
-version: '3.8'
-
 services:
   dolibarr-mcp:
-    build: .
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile
     ports:
       - "3000:3000"
     environment:
-      - NITRO_DOLI_URL=${NITRO_DOLI_URL:-http://host.docker.internal:4000/api/index.php}
-      - NITRO_DOLI_KEY=${NITRO_DOLI_KEY:-your-api-key}
+      # Required: Set these variables or use .env file in same directory
+      - NITRO_DOLI_URL=${NITRO_DOLI_URL}  # e.g., https://your-dolibarr.com/api/index.php
+      - NITRO_DOLI_KEY=${NITRO_DOLI_KEY}  # Your Dolibarr API key
+      # Optional: Override defaults if needed
       - NITRO_HOST=0.0.0.0
       - NITRO_PORT=3000
     restart: unless-stopped

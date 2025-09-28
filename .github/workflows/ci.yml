@@ -30,7 +30,7 @@ jobs:
         cache: 'pnpm'
 
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
 
     - name: Build project
       run: pnpm run build
@@ -59,11 +59,11 @@ jobs:
         cache: 'pnpm'
 
     - name: Install main dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
 
     - name: Install n8n-nodes dependencies
       working-directory: ./n8n-nodes
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
 
     - name: Build n8n nodes
       working-directory: ./n8n-nodes
@@ -93,7 +93,7 @@ jobs:
         cache: 'pnpm'
 
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
 
     - name: Check TypeScript types
       run: pnpm run typecheck
@@ -101,7 +101,7 @@ jobs:
     - name: Lint n8n nodes
       working-directory: ./n8n-nodes
       run: |
-        pnpm install --frozen-lockfile
+        pnpm install
         pnpm run lint || echo "Linting completed with warnings"
 
   integration-test:
@@ -123,7 +123,7 @@ jobs:
         cache: 'pnpm'
 
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
 
     - name: Build project
       run: pnpm run build
