@@ -1,5 +1,5 @@
 {
-  "name": "@dolibarr/n8n-nodes-dolibarr-mcp",
+  "name": "@im/n8n-nodes-dolibarr-mcp",
   "version": "0.1.0",
   "description": "n8n nodes for Dolibarr MCP Server integration",
   "keywords": ["n8n-community-node-package", "n8n", "dolibarr", "mcp", "erp", "crm"],

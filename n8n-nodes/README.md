@@ -21,14 +21,14 @@ npm link
 3. In your n8n installation, link the package:
 ```bash
 cd ~/.n8n
-npm link @dolibarr/n8n-nodes-dolibarr-mcp
+npm link @im/n8n-nodes-dolibarr-mcp
 ```
 
 ### Option 2: Installation via n8n Interface
 
 1. Access your n8n instance settings
 2. Go to "Community Nodes"
-3. Install the package: `@dolibarr/n8n-nodes-dolibarr-mcp`
+3. Install the package: `@im/n8n-nodes-dolibarr-mcp`
 
 ## Available Nodes
 
