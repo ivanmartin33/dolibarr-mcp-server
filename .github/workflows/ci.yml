@@ -72,7 +72,9 @@ jobs:
     - name: Check n8n build output
       run: |
         ls -la n8n-nodes/dist/
-        test -d n8n-nodes/dist/nodes
+        test -f n8n-nodes/dist/DolibarrMcp.node.js
+        test -f n8n-nodes/dist/McpClient.node.js
+        test -f n8n-nodes/dist/index.js
 
   lint:
     runs-on: ubuntu-latest
