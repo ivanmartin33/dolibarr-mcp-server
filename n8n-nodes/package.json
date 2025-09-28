@@ -1,0 +1,53 @@
+{
+  "name": "@dolibarr/n8n-nodes-dolibarr-mcp",
+  "version": "0.1.0",
+  "description": "n8n nodes for Dolibarr MCP Server integration",
+  "keywords": ["n8n-community-node-package", "n8n", "dolibarr", "mcp", "erp", "crm"],
+  "license": "MIT",
+  "homepage": "https://github.com/ivanmartin33/dolibarr-mcp-server",
+  "author": {
+    "name": "Ivan Martin",
+    "email": "contact@ivanmartin.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivanmartin33/dolibarr-mcp-server.git"
+  },
+  "engines": {
+    "node": ">=18.10",
+    "pnpm": ">=9.1"
+  },
+  "packageManager": "pnpm@9.1.4",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes --write",
+    "lint": "eslint nodes package.json",
+    "lintfix": "eslint nodes package.json --fix",
+    "prepublishOnly": "pnpm run build && pnpm run lint -c .eslintrc.prepublish.js nodes package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/DolibarrMcp/DolibarrMcp.node.js",
+      "dist/nodes/McpClient/McpClient.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.1",
+    "gulp": "^4.0.2",
+    "n8n-workflow": "^1.49.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}

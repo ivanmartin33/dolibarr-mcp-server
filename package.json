@@ -1,0 +1,38 @@
+{
+  "name": "dolibarr-mcp-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A compliant Model Context Protocol (MCP) server for Dolibarr ERP/CRM API integration",
+  "keywords": ["mcp", "dolibarr", "erp", "crm", "api", "nitro", "n8n"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivanmartin33/dolibarr-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ivanmartin33/dolibarr-mcp-server/issues"
+  },
+  "homepage": "https://github.com/ivanmartin33/dolibarr-mcp-server#readme",
+  "packageManager": "pnpm@9.1.4",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "pnpm exec nitropack build",
+    "dev": "pnpm exec nitropack dev",
+    "start": "node .output/server/index.mjs",
+    "preview": "pnpm build && pnpm start",
+    "typecheck": "pnpm exec tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "h3": "^1.15.4",
+    "nitropack": "^2.12.4",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "n8n-workflow": "^1.110.0",
+    "ofetch": "^1.4.1"
+  }
+}

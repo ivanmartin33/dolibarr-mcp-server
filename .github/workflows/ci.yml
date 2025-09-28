@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9.1.4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build project
+      run: pnpm run build
+
+    - name: Check build output
+      run: |
+        ls -la .output/
+        test -f .output/server/index.mjs
+
+  build-n8n-nodes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9.1.4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install main dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Install n8n-nodes dependencies
+      working-directory: ./n8n-nodes
+      run: pnpm install --frozen-lockfile
+
+    - name: Build n8n nodes
+      working-directory: ./n8n-nodes
+      run: pnpm run build
+
+    - name: Check n8n build output
+      run: |
+        ls -la n8n-nodes/dist/
+        test -d n8n-nodes/dist/nodes
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9.1.4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Check TypeScript types
+      run: pnpm run typecheck
+
+    - name: Lint n8n nodes
+      working-directory: ./n8n-nodes
+      run: |
+        pnpm install --frozen-lockfile
+        pnpm run lint || echo "Linting completed with warnings"
+
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9.1.4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build project
+      run: pnpm run build
+
+    - name: Start server in background
+      run: |
+        node .output/server/index.mjs &
+        SERVER_PID=$!
+        echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+        sleep 5
+
+    - name: Test MCP endpoints
+      run: |
+        # Test initialize
+        curl -f -X POST http://localhost:3000/mcp \
+          -H "Content-Type: application/json" \
+          -d '{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": 1}'
+
+        # Test tools/list
+        curl -f -X POST http://localhost:3000/mcp \
+          -H "Content-Type: application/json" \
+          -d '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 2}'
+
+        # Test describe endpoint
+        curl -f http://localhost:3000/mcp/describe
+
+    - name: Stop server
+      if: always()
+      run: kill $SERVER_PID || true

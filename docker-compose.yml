@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  dolibarr-mcp:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NITRO_DOLI_URL=${NITRO_DOLI_URL:-http://host.docker.internal:4000/api/index.php}
+      - NITRO_DOLI_KEY=${NITRO_DOLI_KEY:-your-api-key}
+      - NITRO_HOST=0.0.0.0
+      - NITRO_PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/mcp/describe"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Dolibarr instance for testing
+  # dolibarr:
+  #   image: dolibarr/dolibarr:latest
+  #   ports:
+  #     - "4000:80"
+  #   environment:
+  #     - DOLI_DB_TYPE=mysqli
+  #     - DOLI_DB_HOST=db
+  #     - DOLI_DB_NAME=dolibarr
+  #     - DOLI_DB_USER=dolibarr
+  #     - DOLI_DB_PASSWORD=dolibarr
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - dolibarr_data:/var/www/html
+
+  # db:
+  #   image: mysql:8.0
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     - MYSQL_DATABASE=dolibarr
+  #     - MYSQL_USER=dolibarr
+  #     - MYSQL_PASSWORD=dolibarr
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+
+# volumes:
+#   dolibarr_data:
+#   db_data:
