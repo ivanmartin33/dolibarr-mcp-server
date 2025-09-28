@@ -36,7 +36,7 @@ cd dolibarr-mcp-server
 # Install dependencies
 pnpm install
 
-# Copy environment file
+# Copy environment file for development
 cp .env.example .env
 # Edit .env with your Dolibarr configuration
 
@@ -46,27 +46,44 @@ pnpm run dev
 
 ### Environment Setup
 
-Create a `.env` file in your project root:
+#### Development
+For development, create a `.env` file in your project root:
 
 ```env
-DOLI_URL=https://your-dolibarr-instance.com/api/index.php
-DOLI_KEY=your-dolibarr-api-key
+NITRO_DOLI_URL=https://your-dolibarr-instance.com/api/index.php
+NITRO_DOLI_KEY=your-dolibarr-api-key
+NITRO_HOST=0.0.0.0
+NITRO_PORT=3000
 ```
+
+#### Production
+In production, set environment variables at the system level. Nitro reads `.env` files only in development mode.
 
 ### Running the Server
 
 ```bash
-# Development
+# Development (uses .env file automatically)
 pnpm run dev
 
 # Production build
 pnpm run build
 
-# Start production server
+# Start production server (basic - requires env vars)
 pnpm run start
+
+# Start production with env loading (recommended)
+pnpm run start:prod        # Windows
+pnpm run start:prod:linux  # Linux/macOS
 ```
 
 The server will be available at `http://localhost:3000`
+
+### Environment Variables Best Practices
+
+1. **Development**: Use `.env` file (automatically loaded by Nitro)
+2. **Production**: Use system environment variables or start scripts
+3. **Docker**: Use Docker environment variables or `.env` file with docker-compose
+4. **Never commit** real API keys to version control
 
 ## MCP Tools Available
 
@@ -259,50 +276,69 @@ In your n8n workflow, add an **HTTP Request** node:
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NITRO_DOLI_URL` | Dolibarr API base URL | `http://localhost/api/index.php` |
-| `NITRO_DOLI_KEY` | Dolibarr API key | `super_api_key` |
-| `NITRO_HOST` | Server host | `localhost` |
-| `NITRO_PORT` | Server port | `3000` |
+**Important**: In production, Nitro does not automatically read `.env` files. You must set environment variables at the system level.
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `NITRO_DOLI_URL` | Dolibarr API base URL | ✅ | - |
+| `NITRO_DOLI_KEY` | Dolibarr API key | ✅ | - |
+| `NITRO_HOST` | Server host | ❌ | `localhost` |
+| `NITRO_PORT` | Server port | ❌ | `3000` |
+
+### Setting Environment Variables
+
+#### Linux/macOS
+```bash
+export NITRO_DOLI_URL="https://your-dolibarr.com/api/index.php"
+export NITRO_DOLI_KEY="your-api-key"
+node .output/server/index.mjs
+```
+
+#### Windows PowerShell
+```powershell
+$env:NITRO_DOLI_URL="https://your-dolibarr.com/api/index.php"
+$env:NITRO_DOLI_KEY="your-api-key"
+node .output/server/index.mjs
+```
+
+#### Using Start Script (Recommended)
+The repository includes production start scripts that automatically load variables from `.env` files:
+
+```bash
+# Linux/macOS
+./scripts/start-production.sh
+
+# Windows
+PowerShell -ExecutionPolicy Bypass -File scripts/start-production.ps1
+```
 
 ### Docker
 
-```dockerfile
-FROM node:18-alpine
+#### Build and Run Manually
+```bash
+# Build the image
+docker build -t dolibarr-mcp-server .
 
-# Enable corepack for pnpm
-RUN corepack enable
-
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
-
-COPY . .
-RUN pnpm run build
-
-ENV NITRO_HOST=0.0.0.0
-ENV NITRO_PORT=3000
-
-EXPOSE 3000
-CMD ["node", ".output/server/index.mjs"]
+# Run with required environment variables
+docker run -p 3000:3000 \
+  -e NITRO_DOLI_URL="https://your-dolibarr.com/api/index.php" \
+  -e NITRO_DOLI_KEY="your-api-key" \
+  dolibarr-mcp-server
 ```
 
-### Docker Compose
+**Note**: The Docker image uses a multi-stage build for optimal size and includes automatic validation of required environment variables.
 
-```yaml
-version: '3.8'
-services:
-  dolibarr-mcp:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NITRO_DOLI_URL=http://host.docker.internal:4000/api/index.php
-      - NITRO_DOLI_KEY=your-api-key
-      - NITRO_HOST=0.0.0.0
-      - NITRO_PORT=3000
-    restart: unless-stopped
+#### Using Docker Compose
+Create a `.env` file in the same directory as `docker-compose.yml`:
+
+```env
+NITRO_DOLI_URL=https://your-dolibarr.com/api/index.php
+NITRO_DOLI_KEY=your-api-key
+```
+
+Then run:
+```bash
+docker-compose up -d
 ```
 
 ## License

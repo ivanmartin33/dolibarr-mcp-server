@@ -30,7 +30,7 @@ interface MCPToolCallRequest {
  * @returns JSON-RPC 2.0 response with tool execution result
  */
 export default eventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
 
   try {
     const body: MCPToolCallRequest = await readBody(event)

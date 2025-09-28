@@ -10,7 +10,10 @@ This is a compliant Dolibarr MCP (Model Context Protocol) Server built with Nitr
 
 - `pnpm run dev` - Start development server on http://localhost:3000
 - `pnpm run build` - Build for production
-- `pnpm run start` - Start production server
+- `pnpm run start` - Start production server (basic - requires env vars)
+- `pnpm run start:prod` - Start production with environment loading (Windows)
+- `pnpm run start:prod:linux` - Start production with environment loading (Linux/macOS)
+- `pnpm run preview` - Build and start production server in one command
 - `pnpm run typecheck` - Check TypeScript types
 
 For n8n Docker integration, start the server with host binding:
@@ -21,9 +24,28 @@ NITRO_HOST=0.0.0.0 NITRO_PORT=3000 pnpm run dev
 ## Architecture
 
 - **Framework**: Nitro (TypeScript-based)
-- **Protocol**: JSON-RPC 2.0 (MCP compliant)
+- **Protocol**: JSON-RPC 2.0 (MCP compliant)  
 - **Source Directory**: `server/` (configured in nitro.config.ts)
 - **Package Manager**: Uses pnpm for package management and execution
+- **Project Structure**:
+  - `docker/` - Docker configuration files
+  - `scripts/` - Production startup scripts
+  - `test/` - Test files and utilities
+  - `server/` - Main application code
+  - `n8n-nodes/` - n8n integration nodes
+
+## Environment Management
+
+⚠️ **Critical Note**: Nitro only loads .env files in development mode, not in production!
+
+**For Development**:
+- Create `.env` file with your variables
+- Nitro automatically loads it in dev mode
+
+**For Production**:
+- Use production scripts: `pnpm run start:prod` (Windows) or `pnpm run start:prod:linux` 
+- Or set environment variables directly in your deployment platform
+- Docker automatically uses production scripts with environment validation
 - **Main Routes**:
   - `/` - Default homepage route
   - `/mcp` - Main MCP JSON-RPC endpoint (supports initialize, tools/list, tools/call)
@@ -34,8 +56,8 @@ NITRO_HOST=0.0.0.0 NITRO_PORT=3000 pnpm run dev
 ## Environment Configuration
 
 The server requires these environment variables (configured in nitro.config.ts runtime config):
-- `NITRO_DOLI_URL` - Dolibarr API base URL (default: "http://localhost/api/index.php")
-- `NITRO_DOLI_KEY` - Dolibarr API key (default: "super_api_key")
+- `NITRO_DOLI_URL` - Dolibarr API base URL (default: "http://localhost:4000/api/index.php")
+- `NITRO_DOLI_KEY` - Dolibarr API key (default: "527gu2YLn1n1SrO7h8Ls5Nk2JrGEhZjZ")
 
 For Docker/n8n integration:
 - `NITRO_HOST` - Server host binding (use "0.0.0.0" for Docker access)
@@ -93,6 +115,7 @@ The server exposes four main tools:
   - `h3` - HTTP framework (used by Nitro)
   - `@types/node` - Node.js TypeScript definitions
   - `n8n-workflow` - n8n workflow types (for potential n8n integration)
+- **HTTP Client**: Uses Nitro's built-in `$fetch` for API requests to Dolibarr
 
 ## TypeScript Configuration
 
@@ -117,6 +140,38 @@ The server is designed for n8n workflow integration:
 - Start server with `NITRO_HOST=0.0.0.0` for Docker access
 - Use machine IP instead of localhost for Docker networking issues
 - Set adequate timeout (60s) for HTTP requests in n8n
+
+### Dolibarr API Troubleshooting
+
+If you see 404 errors or "ORIG_PATH_INFO" warnings in Dolibarr logs:
+
+1. **Verify API URL Format**: The correct format is `http://your-dolibarr-instance/api/index.php` (with `/api/index.php`)
+2. **Check API Module**: Ensure REST API module is enabled in Dolibarr (Home > Setup > Modules > "Web services REST API")
+3. **Verify API Key**: Generate and use a valid API key from a Dolibarr user profile
+4. **Test API directly**: Use curl to test:
+   ```bash
+   curl -H "DOLAPIKEY: your-api-key" http://your-dolibarr-instance/api/index.php/users
+   ```
+
+## Docker Support
+
+The project includes Docker configuration for containerized deployment:
+
+### Docker Build
+```bash
+docker build -t dolibarr-mcp-server .
+```
+
+### Docker Compose
+```bash
+# Start with environment variables
+NITRO_DOLI_URL=http://host.docker.internal:4000/api/index.php NITRO_DOLI_KEY=your-api-key docker-compose up
+
+# Or edit docker-compose.yml and run
+docker-compose up
+```
+
+The docker-compose.yml includes optional Dolibarr and MySQL services for complete testing environment.
 
 ## Technology Documentation References
 
@@ -148,3 +203,10 @@ The server is designed for n8n workflow integration:
   - Common endpoints: `/thirdparties`, `/products`, `/orders`, `/invoices`, `/users`
   - Built-in Swagger documentation for testing and exploration
   - Requires dedicated API users with appropriate permissions for security
+
+## Testing
+
+- Test files are located in the `test/` directory
+- Run `node test/test-mcp.js` to test MCP endpoints (requires server to be running)
+- Use `pnpm run test` for a complete test suite
+- Run tests after starting the server to verify functionality

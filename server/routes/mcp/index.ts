@@ -1,5 +1,6 @@
 import { eventHandler, readBody } from "h3";
 import { useRuntimeConfig } from "nitropack/runtime";
+import { NitroRuntimeConfig } from "nitropack/types";
 
 /**
  * Model Context Protocol JSON-RPC 2.0 request interface
@@ -29,7 +30,7 @@ interface MCPRequest {
 export default eventHandler(async (event) => {
   console.log("Received MCP request");
 
-  const config = useRuntimeConfig();
+  const config = useRuntimeConfig(event);
   
   try {
     const body: MCPRequest = await readBody(event);
@@ -196,7 +197,7 @@ export default eventHandler(async (event) => {
  * @param config - Runtime configuration object
  * @returns JSON-RPC 2.0 response with tool execution result
  */
-async function handleToolCall(params: any, requestId: string | number | null, config: any) {
+async function handleToolCall(params: any, requestId: string | number | null, config: NitroRuntimeConfig) {
   try {
     const { name, arguments: args } = params;
 
@@ -268,7 +269,7 @@ async function handleDolibarrGet(args: any, requestId: string | number | null, c
     const data = await $fetch(url, {
       method: "GET",
       headers: {
-        DOLAPIKEY: config.doliKey,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json",
       },
     });
@@ -330,7 +331,7 @@ async function handleDolibarrPost(
     const result = await $fetch(url, {
       method: "POST",
       headers: {
-        DOLAPIKEY: config.doliKey,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json",
       },
       body: data,
@@ -389,7 +390,7 @@ async function handleDolibarrPut(args: any, requestId: string | number | null, c
     const result = await $fetch(url, {
       method: "PUT",
       headers: {
-        DOLAPIKEY: config.doliKey,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json",
       },
       body: data,
@@ -452,7 +453,7 @@ async function handleDolibarrDelete(
     const result = await $fetch(url, {
       method: "DELETE",
       headers: {
-        DOLAPIKEY: config.doliKey,
+        "DOLAPIKEY": config.doliKey,
         "Content-Type": "application/json",
       },
     });

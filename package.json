@@ -1,6 +1,7 @@
 {
   "name": "dolibarr-mcp-server",
   "private": true,
+  "type": "module",
   "version": "0.1.0",
   "description": "A compliant Model Context Protocol (MCP) server for Dolibarr ERP/CRM API integration",
   "keywords": ["mcp", "dolibarr", "erp", "crm", "api", "nitro", "n8n"],
@@ -19,9 +20,11 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "build": "pnpm exec nitropack build",
-    "dev": "pnpm exec nitropack dev",
+    "build": "nitro build",
+    "dev": "nitro dev",
     "start": "node .output/server/index.mjs",
+    "start:prod": "PowerShell -ExecutionPolicy Bypass -File scripts/start-production.ps1",
+    "start:prod:linux": "./scripts/start-production.sh",
     "preview": "pnpm build && pnpm start",
     "typecheck": "pnpm exec tsc --noEmit"
   },
